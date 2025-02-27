@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/long-pooling-poc
+  kafka:
+    bootstrap-servers: localhost:9092
+
+server:
+  servlet:
+    context-path: /long-pooling
+  port: 8099
+
+logging.level.org.johnpaulkh.poc: DEBUG
