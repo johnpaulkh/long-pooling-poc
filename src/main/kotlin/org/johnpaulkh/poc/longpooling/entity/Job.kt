@@ -11,7 +11,7 @@ data class Job(
     var id: String? = null,
     val clientId: String,
     val name: String,
-    val cron: String,
+    val cron: String? = null,
     val type: JobType,
     val preFlight: PreFlight? = null,
     val externalRequest: RequestSetting,

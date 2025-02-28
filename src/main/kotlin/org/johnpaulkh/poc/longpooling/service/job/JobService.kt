@@ -1,4 +1,4 @@
-package org.johnpaulkh.poc.longpooling.service
+package org.johnpaulkh.poc.longpooling.service.job
 
 import org.johnpaulkh.poc.longpooling.dto.JobRequest
 import org.johnpaulkh.poc.longpooling.dto.JobResponse

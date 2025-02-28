@@ -1,7 +1,7 @@
 package org.johnpaulkh.poc.longpooling.controller
 
 import org.johnpaulkh.poc.longpooling.dto.ExecutionRequest
-import org.johnpaulkh.poc.longpooling.service.ExecutionCoordinatorService
+import org.johnpaulkh.poc.longpooling.service.execution.ExecutionCoordinatorService
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

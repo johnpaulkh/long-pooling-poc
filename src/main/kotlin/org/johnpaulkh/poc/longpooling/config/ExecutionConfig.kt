@@ -1,9 +1,9 @@
 package org.johnpaulkh.poc.longpooling.config
 
 import org.johnpaulkh.poc.longpooling.entity.JobType
-import org.johnpaulkh.poc.longpooling.service.MultipleFirePreflightExecutionService
-import org.johnpaulkh.poc.longpooling.service.SingleFireExecutionService
-import org.johnpaulkh.poc.longpooling.service.SingleFirePreflightExecutionService
+import org.johnpaulkh.poc.longpooling.service.execution.strategies.MultipleFirePreflightExecutionService
+import org.johnpaulkh.poc.longpooling.service.execution.strategies.SingleFireExecutionService
+import org.johnpaulkh.poc.longpooling.service.execution.strategies.SingleFirePreflightExecutionService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

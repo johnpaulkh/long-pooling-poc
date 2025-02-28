@@ -1,7 +1,7 @@
 package org.johnpaulkh.poc.longpooling.controller
 
 import org.johnpaulkh.poc.longpooling.dto.JobRequest
-import org.johnpaulkh.poc.longpooling.service.JobService
+import org.johnpaulkh.poc.longpooling.service.job.JobService
 import org.springframework.web.bind.annotation.*
 
 @RestController
