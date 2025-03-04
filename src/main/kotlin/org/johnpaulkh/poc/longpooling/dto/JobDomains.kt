@@ -2,6 +2,7 @@ package org.johnpaulkh.poc.longpooling.dto
 
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.entity.JobType
+import org.johnpaulkh.poc.longpooling.entity.PreFlight
 import java.time.Instant
 
 typealias EntityHttpRequestSetting = org.johnpaulkh.poc.longpooling.entity.RequestSetting
@@ -23,6 +24,7 @@ data class JobRequest(
         externalRequest = externalRequest.toEntity(),
         callBackRequest = callbackRequest.toEntity(),
         createdAt = Instant.now(),
+        preFlight = preFlight?.let { PreFlight(it.url) }
     )
 }
 

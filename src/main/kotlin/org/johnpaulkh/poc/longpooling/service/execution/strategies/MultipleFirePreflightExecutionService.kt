@@ -24,9 +24,9 @@ class MultipleFirePreflightExecutionService(
         val preflightResponse = withContext(dispatcherProvider.io()) {
             restTemplate.getForEntity(preflight.url, List::class.java)
                 .body
-        }!!
+        }
 
-        preflightResponse.forEach { entry ->
+        preflightResponse?.forEach { entry ->
             val externalHttpEntity = HttpEntity<Any>(entry, null)
             callExternalAndCallBack(job, externalHttpEntity)
         }
