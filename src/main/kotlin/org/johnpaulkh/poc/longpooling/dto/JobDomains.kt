@@ -14,7 +14,7 @@ data class JobRequest(
     val externalRequest: RequestSetting,
     val callbackRequest: RequestSetting,
     val preFlight: PreFlightRequest? = null,
-    ) {
+) {
     fun toEntity() = Job(
         type = type,
         name = name,

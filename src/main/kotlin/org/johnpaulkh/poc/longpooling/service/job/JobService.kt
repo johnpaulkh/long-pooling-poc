@@ -55,7 +55,7 @@ class JobService(
             )
         }
 
-        val isCronValid = CronExpression.isValidExpression(request.cron)
+        val isCronValid = request.cron.isNullOrBlank() || CronExpression.isValidExpression(request.cron)
         if (!isCronValid) {
             throw ServiceException(
                 code = "JOB_CREATE__CRON_INVALID",

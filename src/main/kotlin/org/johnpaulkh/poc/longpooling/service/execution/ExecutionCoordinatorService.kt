@@ -1,5 +1,7 @@
 package org.johnpaulkh.poc.longpooling.service.execution
 
+import kotlinx.coroutines.withContext
+import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
 import org.johnpaulkh.poc.longpooling.dto.ExecutionRequest
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.entity.JobType
@@ -11,23 +13,26 @@ import org.springframework.stereotype.Service
 @Service
 class ExecutionCoordinatorService(
     private val jobRepository: JobRepository,
-    private val executionServiceMap: Map<JobType, ExecutionService>
+    private val executionServiceMap: Map<JobType, ExecutionService>,
+    private val dispatcherProvider: DispatcherProvider
 ) {
 
-    fun execute(
+    suspend fun execute(
         request: ExecutionRequest
     ) {
-        val job = jobRepository.findByClientIdAndName(
-            clientId = request.clientId,
-            name = request.name
-        ) ?: throw ServiceException(
+        val job = withContext(dispatcherProvider.io()) {
+            jobRepository.findByClientIdAndName(
+                clientId = request.clientId,
+                name = request.name
+            )
+        } ?: throw ServiceException(
             code = "EXECUTION__NO_JOB",
             message = "Job for ${request.clientId} with name ${request.name} cannot be found",
         )
         execute(job)
     }
 
-    fun execute(jobId: String) {
+    suspend fun execute(jobId: String) {
         val job = jobRepository.findByIdOrNull(jobId)
             ?: throw ServiceException(
                 code = "EXECUTION__NO_JOB",
@@ -36,7 +41,7 @@ class ExecutionCoordinatorService(
         execute(job)
     }
 
-    fun execute(job: Job) {
+    suspend fun execute(job: Job) {
         val jobType = job.type
         val executionService = executionServiceMap[jobType]
             ?: throw ServiceException(

@@ -15,8 +15,8 @@ class ExecutionController(
 ) {
 
     @PostMapping("/{id}")
-    fun execute(@PathVariable id: String) = executionService.execute(id)
+    suspend fun execute(@PathVariable id: String) = executionService.execute(id)
 
     @PostMapping
-    fun execute(@RequestBody request: ExecutionRequest) = executionService.execute(request)
+    suspend fun execute(@RequestBody request: ExecutionRequest) = executionService.execute(request)
 }

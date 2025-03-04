@@ -1,45 +1,24 @@
 package org.johnpaulkh.poc.longpooling.service.execution.strategies
 
+import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.service.execution.ExecutionService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
 @Service
 class SingleFireExecutionService(
-    private val restTemplate: RestTemplate
-): ExecutionService {
+    restTemplate: RestTemplate,
+    dispatcherProvider: DispatcherProvider
+) : ExecutionService(restTemplate, dispatcherProvider) {
 
     private val logger = LoggerFactory.getLogger(SingleFireExecutionService::class.java)
 
-    override fun execute(job: Job) {
+    override suspend fun execute(job: Job) {
         logger.debug("Single fire execution")
-
-        val externalRequest = job.externalRequest
-
         val externalHttpEntity = HttpEntity<String>(null, null)
-        val externalResponse = restTemplate.exchange(
-            externalRequest.url,
-            HttpMethod.valueOf(externalRequest.method),
-            externalHttpEntity,
-            String::class.java
-        )
-
-        val callbackRequest = job.callBackRequest
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-
-        val callbackHttpEntity = HttpEntity<String>(externalResponse.body, headers)
-        restTemplate.exchange(
-            callbackRequest.url,
-            HttpMethod.valueOf(callbackRequest.method),
-            callbackHttpEntity,
-            String::class.java
-        )
+        callExternalAndCallBack(job, externalHttpEntity)
     }
 }
