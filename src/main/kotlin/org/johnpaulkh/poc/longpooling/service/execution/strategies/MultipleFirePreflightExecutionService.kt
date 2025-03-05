@@ -1,6 +1,6 @@
 package org.johnpaulkh.poc.longpooling.service.execution.strategies
 
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.service.execution.ExecutionService
@@ -13,11 +13,13 @@ import org.springframework.web.client.RestTemplate
 class MultipleFirePreflightExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
-): ExecutionService(restTemplate, dispatcherProvider) {
+) : ExecutionService(
+    restTemplate,
+    dispatcherProvider,
+    LoggerFactory.getLogger(MultipleFirePreflightExecutionService::class.java)
+) {
 
-    private val logger = LoggerFactory.getLogger(MultipleFirePreflightExecutionService::class.java)
-
-    override suspend fun execute(job: Job) {
+    override suspend fun execute(job: Job) = coroutineScope {
         logger.debug("Multiple fire preflight execution")
 
         val preflight = job.preFlight!!
@@ -27,6 +29,16 @@ class MultipleFirePreflightExecutionService(
         }
 
         preflightResponse?.forEach { entry ->
+            handlePreflightResponse(job, entry)
+        }
+    }
+
+    fun CoroutineScope.handlePreflightResponse(job: Job, entry: Any?) = launch {
+        if (entry == null)
+            return@launch
+
+        withContext(dispatcherProvider.io()) {
+            logger.debug("Thread name : ${Thread.currentThread().name}")
             val externalHttpEntity = HttpEntity<Any>(entry, null)
             callExternalAndCallBack(job, externalHttpEntity)
         }

@@ -1,7 +1,9 @@
 package org.johnpaulkh.poc.longpooling.controller.dummy
 
+import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
+import java.util.UUID
 
 @RestController
 @RequestMapping("/dummy")
@@ -27,10 +29,14 @@ class DummyController {
     )
 
     @GetMapping("/multiple-preflights")
-    fun multiplePreflights() = listOf(
-        mapOf("pink" to "floyd"),
-        mapOf("dream" to "theater"),
-    )
+    fun multiplePreflights(): List<Pair<String, String>> {
+        val result = ArrayList<Pair<String, String>>()
+        for (i in 1..100) {
+            val random = UUID.randomUUID()
+            result.add(Pair("item-$i", "value-$random"))
+        }
+        return result
+    }
 
     @PostMapping("/multiple-with-preflights")
     fun multipleWithPreflights(
@@ -39,7 +45,8 @@ class DummyController {
 
 
     @PostMapping("/post-it")
-    fun postIt(@RequestBody request: Map<String, String>) {
+    suspend fun postIt(@RequestBody request: Map<String, String>) {
+        delay(100)
         logger.debug("request = {}", request)
     }
 }

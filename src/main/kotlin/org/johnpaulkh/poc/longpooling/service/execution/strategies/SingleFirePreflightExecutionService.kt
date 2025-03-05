@@ -1,5 +1,6 @@
 package org.johnpaulkh.poc.longpooling.service.execution.strategies
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
 import org.johnpaulkh.poc.longpooling.entity.Job
@@ -15,11 +16,13 @@ import org.springframework.web.client.RestTemplate
 class SingleFirePreflightExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
-): ExecutionService(restTemplate, dispatcherProvider) {
+) : ExecutionService(
+    restTemplate,
+    dispatcherProvider,
+    LoggerFactory.getLogger(SingleFireExecutionService::class.java)
+) {
 
-    private val logger = LoggerFactory.getLogger(SingleFirePreflightExecutionService::class.java)
-
-    override suspend fun execute(job: Job) {
+    override suspend fun execute(job: Job) = coroutineScope {
         logger.debug("Single fire preflight execution")
 
         val preflight = job.preFlight!!
