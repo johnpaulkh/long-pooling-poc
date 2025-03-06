@@ -19,7 +19,7 @@ abstract class ExecutionService(
     protected val logger: Logger,
 ) {
 
-    protected val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+    private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     abstract suspend fun execute(job: Job): Any?
 
