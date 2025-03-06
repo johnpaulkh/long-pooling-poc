@@ -16,4 +16,6 @@ interface JobRepository : MongoRepository<Job, String> {
         clientId: String,
         name: String,
     ): Job?
+
+    fun findAllByCronIsNotNull(): List<Job>
 }

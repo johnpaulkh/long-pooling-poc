@@ -33,14 +33,12 @@ class MultipleFirePreflightExecutionService(
         }
     }
 
-    fun CoroutineScope.handlePreflightResponse(job: Job, entry: Any?) = launch {
+    fun CoroutineScope.handlePreflightResponse(job: Job, entry: Any?) = launch(dispatcherProvider.io()) {
         if (entry == null)
             return@launch
 
-        withContext(dispatcherProvider.io()) {
-            logger.debug("Thread name : ${Thread.currentThread().name}")
-            val externalHttpEntity = HttpEntity<Any>(entry, null)
-            callExternalAndCallBack(job, externalHttpEntity)
-        }
+        logger.debug("Thread name : ${Thread.currentThread().name}")
+        val externalHttpEntity = HttpEntity<Any>(entry, null)
+        callExternalAndCallBack(job, externalHttpEntity)
     }
 }
