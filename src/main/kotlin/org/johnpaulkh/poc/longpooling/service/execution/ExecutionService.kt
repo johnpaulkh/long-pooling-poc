@@ -37,19 +37,8 @@ abstract class ExecutionService(
         logger.debug("Call external and callback for entity : {}", preflightResponse)
         val externalUrl = job.externalRequest.url
         val externalCall = when (val externalMethod = job.externalRequest.method) {
-            HttpMethod.POST.name() -> suspend {
-                val externalHttpEntity = HttpEntity<String>(preflightResponse, null)
-                call(externalUrl, externalMethod, externalHttpEntity)
-            }
-            HttpMethod.GET.name() -> suspend {
-                val preflightObj = preflightResponse?.let { objectMapper.readValue<Map<String, Any>>(it) }
-                val uri = preflightObj
-                    ?.entries
-                    ?.fold(UriComponentsBuilder.fromUri(URI(externalUrl))) { u, o -> u.queryParam(o.key, o.value) }
-                    ?: UriComponentsBuilder.fromUri(URI(externalUrl))
-
-                call(uri.encode().toUriString(), externalMethod, null)
-            }
+            HttpMethod.POST.name() -> callPost(externalUrl, externalMethod, preflightResponse)
+            HttpMethod.GET.name() -> callGet(externalUrl, externalMethod, preflightResponse)
             else -> suspend { null }
         }
 
@@ -64,5 +53,28 @@ abstract class ExecutionService(
                 val callbackRequest = job.callBackRequest
                 call(callbackRequest.url, callbackRequest.method, httpEntity)
             }
+    }
+
+    private fun callPost(
+        externalUrl: String,
+        externalMethod: String,
+        preflightResponse: String?
+    ) = suspend {
+        val externalHttpEntity = HttpEntity<String>(preflightResponse, null)
+        call(externalUrl, externalMethod, externalHttpEntity)
+    }
+
+    private fun callGet(
+        externalUrl: String,
+        externalMethod: String,
+        preflightResponse: String?
+    ) = suspend {
+        val preflightObj = preflightResponse?.let { objectMapper.readValue<Map<String, Any>>(it) }
+        val uri = preflightObj
+            ?.entries
+            ?.fold(UriComponentsBuilder.fromUri(URI(externalUrl))) { u, o -> u.queryParam(o.key, o.value) }
+            ?: UriComponentsBuilder.fromUri(URI(externalUrl))
+
+        call(uri.encode().toUriString(), externalMethod, null)
     }
 }
