@@ -22,7 +22,7 @@ class DummyController {
     fun preflight() = "test"
 
     @PostMapping("/single-with-preflight")
-    fun singleWithPreflight(
+    fun postSingleWithPreflight(
         @RequestBody body: String
     ) = mapOf(
         "pink" to body,
