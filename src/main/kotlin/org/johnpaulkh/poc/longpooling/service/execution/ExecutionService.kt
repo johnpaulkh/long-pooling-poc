@@ -2,6 +2,7 @@ package org.johnpaulkh.poc.longpooling.service.execution
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.withContext
@@ -33,7 +34,7 @@ abstract class ExecutionService(
             )
         }
 
-    suspend fun callExternalAndCallBack(job: Job, preflightResponse: String?): ResponseEntity<String> {
+    suspend fun callExternalAndCallBack(job: Job, preflightResponse: Any?): ResponseEntity<String> {
         logger.debug("Call external and callback for entity : {}", preflightResponse)
         val externalUrl = job.externalRequest.url
         val externalCall = when (val externalMethod = job.externalRequest.method) {
@@ -58,18 +59,18 @@ abstract class ExecutionService(
     private fun callPost(
         externalUrl: String,
         externalMethod: String,
-        preflightResponse: String?
+        preflightResponse: Any?
     ) = suspend {
-        val externalHttpEntity = HttpEntity<String>(preflightResponse, null)
+        val externalHttpEntity = HttpEntity<Any>(preflightResponse, null)
         call(externalUrl, externalMethod, externalHttpEntity)
     }
 
     private fun callGet(
         externalUrl: String,
         externalMethod: String,
-        preflightResponse: String?
+        preflightResponse: Any?
     ) = suspend {
-        val preflightObj = preflightResponse?.let { objectMapper.readValue<Map<String, Any>>(it) }
+        val preflightObj = preflightResponse?.let { objectMapper.convertValue<Map<String, Any>>(it) }
         val uri = preflightObj
             ?.entries
             ?.fold(UriComponentsBuilder.fromUri(URI(externalUrl))) { u, o -> u.queryParam(o.key, o.value) }

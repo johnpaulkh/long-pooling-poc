@@ -38,7 +38,6 @@ class MultipleFirePreflightExecutionService(
             return@launch
 
         logger.debug("Thread name : ${Thread.currentThread().name}")
-        val externalHttpEntity = HttpEntity<Any>(entry, null)
-        callExternalAndCallBack(job, externalHttpEntity)
+        callExternalAndCallBack(job, entry)
     }
 }
