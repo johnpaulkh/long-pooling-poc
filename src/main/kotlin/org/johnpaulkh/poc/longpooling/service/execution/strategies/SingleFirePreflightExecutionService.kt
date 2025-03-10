@@ -11,6 +11,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
@@ -19,11 +20,13 @@ class SingleFirePreflightExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
     objectMapper: ObjectMapper,
+    kafkaTemplate: KafkaTemplate<String, String>,
 ) : ExecutionService(
     restTemplate,
     dispatcherProvider,
     LoggerFactory.getLogger(SingleFireExecutionService::class.java),
     objectMapper,
+    kafkaTemplate,
 ) {
 
     override suspend fun execute(job: Job) = coroutineScope {

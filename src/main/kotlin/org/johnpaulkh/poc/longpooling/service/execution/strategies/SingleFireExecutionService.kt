@@ -7,6 +7,7 @@ import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.service.execution.ExecutionService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
@@ -14,12 +15,14 @@ import org.springframework.web.client.RestTemplate
 class SingleFireExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
-    objectMapper: ObjectMapper
+    objectMapper: ObjectMapper,
+    kafkaTemplate: KafkaTemplate<String, String>,
 ) : ExecutionService(
     restTemplate,
     dispatcherProvider,
     LoggerFactory.getLogger(SingleFirePreflightExecutionService::class.java),
-    objectMapper
+    objectMapper,
+    kafkaTemplate,
 ) {
 
     override suspend fun execute(job: Job) = coroutineScope {

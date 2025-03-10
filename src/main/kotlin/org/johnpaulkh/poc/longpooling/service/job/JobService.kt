@@ -62,5 +62,19 @@ class JobService(
                 message = "Invalid cron format for '${request.cron}'"
             )
         }
+
+        val callbackRequestNotNull = request.callbackRequest != null
+        val callbackEventNotNull = request.callbackEvent != null
+        val isCallBackSettingValid = callbackRequestNotNull xor callbackEventNotNull
+        if (!isCallBackSettingValid) {
+            throw ServiceException(
+                code = "JOB_CREATE__CALLBACK_SETTING_INVALID",
+                message = """
+                    Invalid callback setting format 
+                        for httpRequest : '${request.callbackRequest}' 
+                        and event : '${request.callbackEvent}
+                """.trimIndent()
+            )
+        }
     }
 }

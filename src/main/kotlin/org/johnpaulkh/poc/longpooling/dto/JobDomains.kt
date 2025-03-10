@@ -6,6 +6,7 @@ import org.johnpaulkh.poc.longpooling.entity.PreFlight
 import java.time.Instant
 
 typealias EntityHttpRequestSetting = org.johnpaulkh.poc.longpooling.entity.RequestSetting
+typealias EntityEventSetting = org.johnpaulkh.poc.longpooling.entity.EventSetting
 
 data class JobRequest(
     val type: JobType,
@@ -13,7 +14,8 @@ data class JobRequest(
     val name: String,
     val cron: String? = null,
     val externalRequest: RequestSetting,
-    val callbackRequest: RequestSetting,
+    val callbackRequest: RequestSetting? = null,
+    val callbackEvent: EventSetting? = null,
     val preFlight: PreFlightRequest? = null,
 ) {
     fun toEntity() = Job(
@@ -22,10 +24,30 @@ data class JobRequest(
         cron = cron,
         clientId = clientId,
         externalRequest = externalRequest.toEntity(),
-        callBackRequest = callbackRequest.toEntity(),
+        callBackRequest = callbackRequest?.toEntity(),
+        callBackEvent = callbackEvent?.toEntity(),
         createdAt = Instant.now(),
         preFlight = preFlight?.let { PreFlight(it.url) }
     )
+}
+
+data class EventSetting(
+    val topic: String,
+    val idPath: String,
+) {
+    fun toEntity() = EntityEventSetting(
+        topic = topic,
+        idPath = idPath,
+    )
+
+    companion object {
+        fun fromEntity(entity: EntityEventSetting?): EventSetting? = entity?.let {
+            EventSetting(
+                topic = it.topic,
+                idPath = it.idPath,
+            )
+        }
+    }
 }
 
 data class RequestSetting(
@@ -38,10 +60,12 @@ data class RequestSetting(
     )
 
     companion object {
-        fun fromEntity(entity: EntityHttpRequestSetting) = RequestSetting(
-            method = entity.method,
-            url = entity.url,
-        )
+        fun fromEntity(entity: EntityHttpRequestSetting?) = entity?.let {
+            RequestSetting(
+                method = entity.method,
+                url = entity.url,
+            )
+        }
     }
 }
 
@@ -53,7 +77,8 @@ data class JobResponse(
     val cron: String? = null,
     val preFlight: PreFlightRequest? = null,
     val externalRequest: RequestSetting,
-    val callbackRequest: RequestSetting,
+    val callbackRequest: RequestSetting? = null,
+    val callbackEvent: EventSetting? = null,
     val createdAt: Instant,
 ) {
     companion object {
@@ -63,8 +88,9 @@ data class JobResponse(
             clientId = job.clientId,
             name = job.name,
             cron = job.cron,
-            externalRequest = RequestSetting.fromEntity(job.externalRequest),
+            externalRequest = RequestSetting.fromEntity(job.externalRequest)!!,
             callbackRequest = RequestSetting.fromEntity(job.callBackRequest),
+            callbackEvent = EventSetting.fromEntity(job.callBackEvent),
             preFlight = job.preFlight?.let { PreFlightRequest(it.url) },
             createdAt = job.createdAt,
         )

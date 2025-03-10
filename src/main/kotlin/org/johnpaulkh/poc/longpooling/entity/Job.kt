@@ -15,7 +15,8 @@ data class Job(
     val type: JobType,
     val preFlight: PreFlight? = null,
     val externalRequest: RequestSetting,
-    val callBackRequest: RequestSetting,
+    val callBackRequest: RequestSetting? = null,
+    val callBackEvent: EventSetting? = null,
     val createdAt: Instant,
 )
 
@@ -89,4 +90,9 @@ data class RequestSetting(
 
 data class PreFlight(
     val url: String,
+)
+
+data class EventSetting(
+    val topic: String,
+    val idPath: String,
 )

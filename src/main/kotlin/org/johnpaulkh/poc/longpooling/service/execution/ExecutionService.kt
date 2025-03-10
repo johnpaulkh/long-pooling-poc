@@ -5,9 +5,14 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.withContext
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
+import org.johnpaulkh.poc.longpooling.entity.EventSetting
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.slf4j.Logger
-import org.springframework.http.*
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
@@ -16,7 +21,8 @@ abstract class ExecutionService(
     protected val restTemplate: RestTemplate,
     protected val dispatcherProvider: DispatcherProvider,
     protected val logger: Logger,
-    protected val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val kafkaTemplate: KafkaTemplate<String, String>
 ) {
 
     abstract suspend fun execute(job: Job): Any?
@@ -31,7 +37,7 @@ abstract class ExecutionService(
             )
         }
 
-    suspend fun callExternalAndCallBack(job: Job, preflightResponse: Any?): ResponseEntity<String> {
+    suspend fun callExternalAndCallBack(job: Job, preflightResponse: Any?) {
         logger.debug("Call external and callback for entity : {}", preflightResponse)
         val externalUrl = job.externalRequest.url
         val externalCall = when (val externalMethod = job.externalRequest.method) {
@@ -40,17 +46,18 @@ abstract class ExecutionService(
             else -> suspend { null }
         }
 
-        return externalCall.invoke()
-            ?.body
-            .let { body ->
-                val headers = HttpHeaders()
-                headers.contentType = MediaType.APPLICATION_JSON
-                HttpEntity<String>(body, headers)
-            }
-            .let { httpEntity ->
-                val callbackRequest = job.callBackRequest
-                call(callbackRequest.url, callbackRequest.method, httpEntity)
-            }
+        val externalCallResult = externalCall.invoke()?.body
+
+        if (job.callBackRequest != null) {
+            val headers = HttpHeaders()
+            headers.contentType = MediaType.APPLICATION_JSON
+            val httpEntity = HttpEntity<String>(externalCallResult, headers)
+
+            val callbackRequest = job.callBackRequest
+            call(callbackRequest.url, callbackRequest.method, httpEntity)
+        } else if (job.callBackEvent != null) {
+            sendEvent(job.callBackEvent, externalCallResult)
+        }
     }
 
     private fun callPost(
@@ -78,5 +85,26 @@ abstract class ExecutionService(
             ?: UriComponentsBuilder.fromUri(URI(externalUrl))
 
         call(uri.encode().toUriString(), externalMethod, null)
+    }
+
+    private fun sendEvent(eventSetting: EventSetting, externalCallResult: Any?) {
+        val topic = eventSetting.topic
+        val idPath = eventSetting.idPath
+        val key: String
+        val message: String
+
+        when(externalCallResult) {
+            is String -> {
+                val deserialized = objectMapper.readValue<Map<String, Any>>(externalCallResult)
+                key = deserialized[idPath].toString()
+                message = externalCallResult
+            }
+            else -> {
+                val deserialized = objectMapper.convertValue<Map<String, Any>>(externalCallResult)
+                key = deserialized[idPath].toString()
+                message = objectMapper.writeValueAsString(externalCallResult)
+            }
+        }
+        kafkaTemplate.send(topic, key, message)
     }
 }
