@@ -10,4 +10,5 @@ server:
     context-path: /long-pooling
   port: 8099
 
+#logging.level.org.springframework.web.client.RestTemplate: DEBUG
 logging.level.org.johnpaulkh.poc: DEBUG

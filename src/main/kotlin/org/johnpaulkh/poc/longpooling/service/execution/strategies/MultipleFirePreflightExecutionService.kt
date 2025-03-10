@@ -1,11 +1,14 @@
 package org.johnpaulkh.poc.longpooling.service.execution.strategies
 
-import kotlinx.coroutines.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
 import org.johnpaulkh.poc.longpooling.entity.Job
 import org.johnpaulkh.poc.longpooling.service.execution.ExecutionService
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
@@ -13,10 +16,12 @@ import org.springframework.web.client.RestTemplate
 class MultipleFirePreflightExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
+    objectMapper: ObjectMapper
 ) : ExecutionService(
     restTemplate,
     dispatcherProvider,
-    LoggerFactory.getLogger(MultipleFirePreflightExecutionService::class.java)
+    LoggerFactory.getLogger(MultipleFirePreflightExecutionService::class.java),
+    objectMapper,
 ) {
 
     override suspend fun execute(job: Job) = coroutineScope {
@@ -37,7 +42,6 @@ class MultipleFirePreflightExecutionService(
         if (entry == null)
             return@launch
 
-        logger.debug("Thread name : ${Thread.currentThread().name}")
         callExternalAndCallBack(job, entry)
     }
 }

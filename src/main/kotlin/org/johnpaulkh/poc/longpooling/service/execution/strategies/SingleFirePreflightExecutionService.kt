@@ -1,5 +1,6 @@
 package org.johnpaulkh.poc.longpooling.service.execution.strategies
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
@@ -17,10 +18,12 @@ import org.springframework.web.client.RestTemplate
 class SingleFirePreflightExecutionService(
     restTemplate: RestTemplate,
     dispatcherProvider: DispatcherProvider,
+    objectMapper: ObjectMapper,
 ) : ExecutionService(
     restTemplate,
     dispatcherProvider,
-    LoggerFactory.getLogger(SingleFireExecutionService::class.java)
+    LoggerFactory.getLogger(SingleFireExecutionService::class.java),
+    objectMapper,
 ) {
 
     override suspend fun execute(job: Job) = coroutineScope {
@@ -31,8 +34,6 @@ class SingleFirePreflightExecutionService(
             restTemplate.getForEntity(preflight.url, String::class.java)
                 .body
         }
-
-        val externalHttpEntity = HttpEntity<String>(preflightResponse, null)
-        callExternalAndCallBack(job, externalHttpEntity)
+        callExternalAndCallBack(job, preflightResponse)
     }
 }

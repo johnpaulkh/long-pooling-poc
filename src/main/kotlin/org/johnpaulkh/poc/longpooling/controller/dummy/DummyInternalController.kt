@@ -1,23 +1,37 @@
 package org.johnpaulkh.poc.longpooling.controller.dummy
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 @RestController
 @RequestMapping("/dummy/internal")
-class DummyInternalController {
+class DummyInternalController(
+    private val objectMapper: ObjectMapper,
+) {
 
     private val logger: Logger = LoggerFactory.getLogger(DummyInternalController::class.java)
 
-    @PostMapping("/handle")
+    @PostMapping("/handle-list")
     fun handle(
-        @RequestBody request: ExternalResult,
+        @RequestBody request: List<ExternalResult>,
     ) {
-        logger.debug("Received external result: {}", request)
+        logger.debug(
+            "Received list of external result: {}",
+            objectMapper.writeValueAsString(request))
+    }
+
+    @PostMapping("/handle-single")
+    fun handleSingle(
+        @RequestBody request: ExternalResult
+    ) {
+        logger.debug(
+            "Received single external result: {}",
+            objectMapper.writeValueAsString(request)
+        )
     }
 
     @GetMapping("/single-preflight")
@@ -28,10 +42,10 @@ class DummyInternalController {
     }
 
     @GetMapping("/multiple-preflights")
-    fun multiplePreflights(): List<String> {
-        val result = ArrayList<String>()
+    fun multiplePreflights(): List<InternalIdResult> {
+        val result = ArrayList<InternalIdResult>()
         for (i in 1..10) {
-            result.add(UUID.randomUUID().toString())
+            result.add(InternalIdResult(id = UUID.randomUUID().toString()))
         }
         return result
     }
@@ -40,4 +54,8 @@ class DummyInternalController {
 data class InternalPreflightResult(
     val from: Long,
     val to: Long,
+)
+
+data class InternalIdResult(
+    val id: String,
 )

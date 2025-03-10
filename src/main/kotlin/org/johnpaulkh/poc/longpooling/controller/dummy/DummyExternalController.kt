@@ -8,7 +8,7 @@ import kotlin.random.Random
 @RequestMapping("/dummy/external")
 class DummyExternalController {
 
-    @PostMapping("/no-preflight")
+    @GetMapping("/no-preflight")
     fun postNoPreflight(): List<ExternalResult> = generateExternalResults()
 
     @PostMapping("/with-request-body")
@@ -24,13 +24,18 @@ class DummyExternalController {
     ): List<ExternalResult> = generateExternalResults()
         .filter { it.value in from..to }
 
-    @GetMapping("/{id}")
-    fun getWithId(@PathVariable id: String) =
+    @GetMapping
+    fun getWithId(@RequestParam id: String) =
         ExternalResult(id, "item-$id", "value-$id", Random.nextLong(100))
 
     @PostMapping
-    fun postWithId(@RequestBody id: String) =
-        ExternalResult(id, "item-$id", "value-$id", Random.nextLong(100))
+    fun postWithId(@RequestBody idRequest: InternalIdResult) =
+        ExternalResult(
+            id = idRequest.id,
+            name ="item-${idRequest.id}",
+            status = "value-${idRequest.id}",
+            value = Random.nextLong(100)
+        )
 
     private fun generateExternalResults(): List<ExternalResult> {
         val result = ArrayList<ExternalResult>()

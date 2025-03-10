@@ -1,9 +1,7 @@
 package org.johnpaulkh.poc.longpooling.service.execution
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.withContext
 import org.johnpaulkh.poc.longpooling.config.DispatcherProvider
@@ -18,9 +16,8 @@ abstract class ExecutionService(
     protected val restTemplate: RestTemplate,
     protected val dispatcherProvider: DispatcherProvider,
     protected val logger: Logger,
+    protected val objectMapper: ObjectMapper
 ) {
-
-    private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     abstract suspend fun execute(job: Job): Any?
 
@@ -61,7 +58,8 @@ abstract class ExecutionService(
         externalMethod: String,
         preflightResponse: Any?
     ) = suspend {
-        val externalHttpEntity = HttpEntity<Any>(preflightResponse, null)
+        val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON }
+        val externalHttpEntity = HttpEntity<Any>(preflightResponse, headers)
         call(externalUrl, externalMethod, externalHttpEntity)
     }
 
@@ -70,10 +68,13 @@ abstract class ExecutionService(
         externalMethod: String,
         preflightResponse: Any?
     ) = suspend {
-        val preflightObj = preflightResponse?.let { objectMapper.convertValue<Map<String, Any>>(it) }
+        val preflightObj = when (preflightResponse) {
+            is String -> objectMapper.readValue<Map<String, Any>>(preflightResponse)
+            else -> objectMapper.convertValue<Map<String, Any>>(preflightResponse)
+        }
         val uri = preflightObj
-            ?.entries
-            ?.fold(UriComponentsBuilder.fromUri(URI(externalUrl))) { u, o -> u.queryParam(o.key, o.value) }
+            .entries
+            .fold(UriComponentsBuilder.fromUri(URI(externalUrl))) { u, o -> u.queryParam(o.key, o.value) }
             ?: UriComponentsBuilder.fromUri(URI(externalUrl))
 
         call(uri.encode().toUriString(), externalMethod, null)
