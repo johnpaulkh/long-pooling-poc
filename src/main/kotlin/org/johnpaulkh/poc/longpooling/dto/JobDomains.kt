@@ -27,9 +27,17 @@ data class JobRequest(
         callBackRequest = callbackRequest?.toEntity(),
         callBackEvent = callbackEvent?.toEntity(),
         createdAt = Instant.now(),
-        preFlight = preFlight?.let { PreFlight(it.url) }
+        preFlight = preFlight?.toEntity()
     )
 }
+
+data class JobPatchRequest(
+    val cron: String? = null,
+    val externalRequest: RequestSetting? = null,
+    val callbackRequest: RequestSetting? = null,
+    val callbackEvent: EventSetting? = null,
+    val preflight: PreFlightRequest? = null,
+)
 
 data class EventSetting(
     val topic: String,
@@ -99,4 +107,6 @@ data class JobResponse(
 
 data class PreFlightRequest(
     val url: String
-)
+) {
+    fun toEntity() = PreFlight(url = url)
+}

@@ -2,6 +2,7 @@ package org.johnpaulkh.poc.longpooling.service.job
 
 import org.johnpaulkh.poc.longpooling.dto.JobRequest
 import org.johnpaulkh.poc.longpooling.dto.JobResponse
+import org.johnpaulkh.poc.longpooling.dto.JobPatchRequest
 import org.johnpaulkh.poc.longpooling.ex.ServiceException
 import org.johnpaulkh.poc.longpooling.repository.JobRepository
 import org.springframework.data.domain.PageRequest
@@ -21,6 +22,23 @@ class JobService(
             .toEntity()
             .let { jobRepository.save(it) }
             .let { JobResponse.fromEntity(it) }
+
+    fun patch(id: String, request: JobPatchRequest): JobResponse {
+        val fromDB = jobRepository.findByIdOrNull(id)
+            ?: throw ServiceException(
+                code = "JOB_DETAIL__NOT_FOUND",
+                message = "Job with id $id cannot be found")
+
+        val toDB = fromDB.copy(
+            preFlight = request.preflight?.toEntity() ?: fromDB.preFlight,
+            externalRequest = request.externalRequest?.toEntity() ?: fromDB.externalRequest,
+            callBackRequest = request.callbackRequest?.toEntity() ?: fromDB.callBackRequest,
+            callBackEvent = request.callbackEvent?.toEntity() ?: fromDB.callBackEvent,
+            cron = request.cron ?: fromDB.cron,
+        )
+
+        return jobRepository.save(toDB).let { JobResponse.fromEntity(it) }
+    }
 
     fun detail(id: String) = jobRepository.findByIdOrNull(id)
         ?.let { JobResponse.fromEntity(it) }

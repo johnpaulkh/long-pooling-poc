@@ -1,6 +1,7 @@
 package org.johnpaulkh.poc.longpooling.controller
 
 import org.johnpaulkh.poc.longpooling.dto.JobRequest
+import org.johnpaulkh.poc.longpooling.dto.JobPatchRequest
 import org.johnpaulkh.poc.longpooling.service.job.JobService
 import org.springframework.web.bind.annotation.*
 
@@ -12,6 +13,9 @@ class JobController(
 
     @PostMapping("/jobs")
     fun create(@RequestBody request: JobRequest) = jobService.create(request)
+
+    @PatchMapping("/jobs/{id}")
+    fun patch(@PathVariable id: String, @RequestBody request: JobPatchRequest) = jobService.patch(id, request)
 
     @GetMapping("/jobs/{id}")
     fun detail(@PathVariable id: String) = jobService.detail(id)

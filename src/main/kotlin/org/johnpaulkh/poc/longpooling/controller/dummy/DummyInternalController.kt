@@ -1,6 +1,7 @@
 package org.johnpaulkh.poc.longpooling.controller.dummy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.swagger.v3.oas.annotations.Hidden
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -9,6 +10,7 @@ import kotlin.random.Random
 
 @RestController
 @RequestMapping("/dummy/internal")
+@Hidden
 class DummyInternalController(
     private val objectMapper: ObjectMapper,
 ) {

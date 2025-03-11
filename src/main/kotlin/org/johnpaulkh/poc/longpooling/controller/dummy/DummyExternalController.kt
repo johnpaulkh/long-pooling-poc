@@ -1,11 +1,13 @@
 package org.johnpaulkh.poc.longpooling.controller.dummy
 
+import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import kotlin.random.Random
 
 @RestController
 @RequestMapping("/dummy/external")
+@Hidden
 class DummyExternalController {
 
     @GetMapping("/no-preflight")
